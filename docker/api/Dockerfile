@@ -7,14 +7,18 @@ RUN apk add --no-cache dumb-init
 
 # Etapa de construcción
 FROM base AS deps
-COPY package.json yarn.lock ./
-COPY packages ./packages
-COPY apps/pos-api ./apps/pos-api
-RUN yarn install --frozen-lockfile --production=false
+COPY package*.json ./
+COPY apps/pos-api/package*.json ./apps/pos-api/
+COPY packages/shared/package*.json ./packages/shared/
+RUN npm install
 
 # Construir la aplicación
 FROM deps AS builder
-RUN yarn workspace @pos-argentina/api build
+COPY apps/pos-api ./apps/pos-api
+COPY packages/shared ./packages/shared
+COPY tsconfig.base.json ./
+
+RUN cd apps/pos-api && npm run build
 
 # Etapa de producción
 FROM base AS runner
@@ -25,10 +29,14 @@ ENV PORT 4000
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 apiuser
 
-# Copiar archivos necesarios
-COPY --from=builder --chown=apiuser:nodejs /app/apps/pos-api/dist ./
-COPY --from=builder --chown=apiuser:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=apiuser:nodejs /app/package.json ./package.json
+# Instalar solo dependencias de producción
+COPY package*.json ./
+COPY apps/pos-api/package*.json ./apps/pos-api/
+RUN npm install --omit=dev && npm cache clean --force
+
+# Copiar archivos construidos
+COPY --from=builder --chown=apiuser:nodejs /app/apps/pos-api/dist ./dist
+COPY --from=builder --chown=apiuser:nodejs /app/apps/pos-api/package.json ./package.json
 
 # Crear directorio para certificados AFIP
 RUN mkdir -p /app/certs && chown apiuser:nodejs /app/certs
@@ -39,7 +47,7 @@ EXPOSE 4000
 
 # Usar dumb-init para manejo correcto de señales
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "server.js"]
+CMD ["node", "dist/server.js"]
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

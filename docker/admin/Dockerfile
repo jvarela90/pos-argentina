@@ -4,10 +4,10 @@ WORKDIR /app
 
 # Etapa de construcción
 FROM base AS deps
-COPY package.json yarn.lock ./
-COPY packages ./packages
-COPY apps/pos-admin ./apps/pos-admin
-RUN yarn install --frozen-lockfile --production=false
+COPY package*.json ./
+COPY apps/pos-admin/package*.json ./apps/pos-admin/
+COPY packages/shared/package*.json ./packages/shared/
+RUN npm ci --only=production=false
 
 # Construir la aplicación
 FROM deps AS builder
@@ -16,7 +16,11 @@ ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_APP_NAME="POS Argentina - Admin"
 ENV VITE_APP_VERSION="1.0.0"
 
-RUN yarn workspace @pos-argentina/admin build
+COPY apps/pos-admin ./apps/pos-admin
+COPY packages/shared ./packages/shared
+COPY tsconfig.base.json ./
+
+RUN cd apps/pos-admin && npm run build
 
 # Etapa de producción con Nginx
 FROM nginx:alpine AS runner
