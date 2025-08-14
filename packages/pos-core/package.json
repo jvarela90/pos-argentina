@@ -1,0 +1,21 @@
+{
+  "name": "@pos-argentina/pos-core",
+  "version": "1.0.0",
+  "description": "Módulo base del sistema POS - Terminal de ventas",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@pos-argentina/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  }
+}

@@ -1,0 +1,76 @@
+# Pruebas de API - POS Argentina
+# Usar con la extensión REST Client de VS Code
+
+@baseUrl = http://localhost:4000/api/v1
+
+### Health check
+GET {{baseUrl}}/health
+
+### Obtener todos los productos
+GET {{baseUrl}}/products
+
+### Buscar productos por categoría
+GET {{baseUrl}}/products?category=bebidas
+
+### Buscar productos por nombre
+GET {{baseUrl}}/products?search=coca
+
+### Obtener producto por ID (cambiar UUID)
+GET {{baseUrl}}/products/550e8400-e29b-41d4-a716-446655440000
+
+### Crear nuevo producto
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "name": "Producto de Prueba",
+  "price": 1500,
+  "category": "Test",
+  "barcode": "1234567890123",
+  "stock": 100,
+  "minStock": 10,
+  "tax": 21,
+  "active": true
+}
+
+### Buscar por código de barras
+GET {{baseUrl}}/products/barcode/1234567890123
+
+### Obtener productos con stock bajo
+GET {{baseUrl}}/products/alerts/low-stock
+
+### Obtener todos los clientes  
+GET {{baseUrl}}/customers
+
+### Crear nuevo cliente
+POST {{baseUrl}}/customers
+Content-Type: application/json
+
+{
+  "firstName": "Juan",
+  "lastName": "Pérez",
+  "email": "juan@example.com",
+  "phone": "11-1234-5678",
+  "dni": "12345678",
+  "creditLimit": 5000
+}
+
+### Obtener todas las ventas
+GET {{baseUrl}}/sales
+
+### Crear nueva venta
+POST {{baseUrl}}/sales
+Content-Type: application/json
+
+{
+  "customerId": "550e8400-e29b-41d4-a716-446655440001",
+  "items": [
+    {
+      "productId": "550e8400-e29b-41d4-a716-446655440000",
+      "quantity": 2,
+      "unitPrice": 1500
+    }
+  ],
+  "paymentMethod": "cash",
+  "total": 3000
+}

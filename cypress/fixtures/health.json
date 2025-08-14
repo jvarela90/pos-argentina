@@ -1,0 +1,11 @@
+{
+  "status": "ok",
+  "timestamp": "2024-01-01T00:00:00Z",
+  "services": {
+    "database": "connected",
+    "redis": "connected",
+    "modules": {
+      "pos-core": "active"
+    }
+  }
+}

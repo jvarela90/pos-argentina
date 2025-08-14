@@ -1,0 +1,20 @@
+{
+  "name": "@pos-argentina/shared",
+  "version": "0.1.0",
+  "description": "Componentes y utilidades compartidas",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "eventemitter3": "^4.0.7",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/uuid": "^9.0.5",
+    "typescript": "^5.2.2"
+  }
+}

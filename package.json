@@ -1,0 +1,66 @@
+{
+  "name": "pos-argentina-system",
+  "version": "0.1.0-alpha",
+  "description": "Sistema POS modular para el mercado argentino",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "tools/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:terminal\" \"npm run dev:admin\"",
+    "dev:api": "npm run dev --workspace=apps/pos-api",
+    "dev:terminal": "npm run dev --workspace=apps/pos-terminal",
+    "dev:admin": "npm run dev --workspace=apps/pos-admin",
+    "build": "npm run build --workspaces",
+    "build:prod": "NODE_ENV=production npm run build",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:e2e": "cypress run",
+    "lint": "eslint . --ext .ts,.tsx --fix",
+    "typecheck": "tsc --noEmit",
+    "setup:db": "node scripts/setup-database.js",
+    "create:module": "node scripts/create-module.js",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "start": "npm run start --workspaces"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/parser": "^6.7.4",
+    "concurrently": "^8.2.2",
+    "cypress": "^13.3.0",
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pos-argentina/pos-system.git"
+  },
+  "author": "POS Argentina Team",
+  "license": "MIT",
+  "keywords": [
+    "pos",
+    "argentina",
+    "retail",
+    "modular",
+    "pwa",
+    "afip",
+    "mercadopago"
+  ]
+}

@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: pos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pos_argentina
+      POSTGRES_USER: pos_user
+      POSTGRES_PASSWORD: pos_password123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - pos-network
+
+  # Redis para cache y sesiones
+  redis:
+    image: redis:7-alpine
+    container_name: pos-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - pos-network
+
+  # API Backend (Node.js)
+  pos-api:
+    build:
+      context: .
+      dockerfile: ./docker/api/Dockerfile
+    container_name: pos-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://pos_user:pos_password123@postgres:5432/pos_argentina
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: your-jwt-secret-change-in-production
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./apps/pos-api:/app
+      - /app/node_modules
+    networks:
+      - pos-network
+    command: npm run dev
+
+  # Terminal PWA (React)
+  pos-terminal:
+    build:
+      context: .
+      dockerfile: ./docker/terminal/Dockerfile
+    container_name: pos-terminal
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: http://localhost:4000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/pos-terminal:/app
+      - /app/node_modules
+    networks:
+      - pos-network
+    command: npm run dev
+
+  # Panel Admin (React)
+  pos-admin:
+    build:
+      context: .
+      dockerfile: ./docker/admin/Dockerfile
+    container_name: pos-admin
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: http://localhost:4000
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./apps/pos-admin:/app
+      - /app/node_modules
+    networks:
+      - pos-network
+    command: npm run dev
+
+networks:
+  pos-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

@@ -1,0 +1,48 @@
+# Dockerfile para POS Terminal PWA
+FROM node:18-alpine AS base
+WORKDIR /app
+
+# Etapa de construcción
+FROM base AS deps
+COPY package.json yarn.lock ./
+COPY packages ./packages
+COPY apps/pos-terminal ./apps/pos-terminal
+RUN yarn install --frozen-lockfile --production=false
+
+# Construir la aplicación
+FROM deps AS builder
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_APP_NAME="POS Argentina"
+ENV VITE_APP_VERSION="1.0.0"
+
+RUN yarn workspace @pos-argentina/terminal build
+
+# Etapa de producción con Nginx
+FROM nginx:alpine AS runner
+
+# Instalar curl para health check
+RUN apk add --no-cache curl
+
+# Copiar archivos construidos
+COPY --from=builder /app/apps/pos-terminal/dist /usr/share/nginx/html
+
+# Configuración de Nginx para PWA
+COPY docker/terminal/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Script para configuración dinámica
+COPY docker/terminal/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Crear usuario no-root
+RUN addgroup --system --gid 1001 nginx-group
+RUN adduser --system --uid 1001 nginx-user
+
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:3000/ || exit 1
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
